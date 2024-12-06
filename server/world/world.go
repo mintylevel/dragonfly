@@ -146,7 +146,7 @@ func (w *World) EntityRegistry() EntityRegistry {
 // block reads a block from the position passed. If a chunk is not yet loaded
 // at that position, the chunk is loaded, or generated if it could not be found
 // in the world save, and the block returned.
-func (w *World) block(pos cube.Pos) Block {
+func (w *World) Block(pos cube.Pos) Block {
 	return w.blockInChunk(w.chunk(chunkPosFromBlockPos(pos)), pos)
 }
 
