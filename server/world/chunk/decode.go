@@ -120,6 +120,49 @@ func decodeSubChunk(buf *bytes.Buffer, c *Chunk, index *byte, e Encoding) (*SubC
 	return sub, nil
 }
 
+func NetworkDecodeSubChunk(buf *bytes.Buffer, c *Chunk, index *byte, e Encoding) (*SubChunk, error) {
+	ver, err := buf.ReadByte()
+	if err != nil {
+		return nil, fmt.Errorf("error reading version: %w", err)
+	}
+	sub := NewSubChunk(c.air)
+	switch ver {
+	default:
+		return nil, fmt.Errorf("unknown sub chunk version %v: can't decode", ver)
+	case 1:
+		// Version 1 only has one layer for each sub chunk, but uses the format with palettes.
+		storage, err := decodePalettedStorage(buf, e, BlockPaletteEncoding)
+		if err != nil {
+			return nil, err
+		}
+		sub.storages = append(sub.storages, storage)
+	case 8, 9:
+		// Version 8 allows up to 256 layers for one sub chunk.
+		storageCount, err := buf.ReadByte()
+		if err != nil {
+			return nil, fmt.Errorf("error reading storage count: %w", err)
+		}
+		if ver == 9 {
+			uIndex, err := buf.ReadByte()
+			if err != nil {
+				return nil, fmt.Errorf("error reading sub-chunk index: %w", err)
+			}
+			// The index as written here isn't the actual index of the sub-chunk within the chunk. Rather, it is the Y
+			// value of the sub-chunk. This means that we need to translate it to an index.
+			*index = uint8(int8(uIndex) - int8(c.r[0]>>4))
+		}
+		sub.storages = make([]*PalettedStorage, storageCount)
+
+		for i := byte(0); i < storageCount; i++ {
+			sub.storages[i], err = decodePalettedStorage(buf, e, BlockPaletteEncoding)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return sub, nil
+}
+
 // decodeBiomes reads the paletted storages holding biomes from buf and stores it into the Chunk passed.
 func decodeBiomes(buf *bytes.Buffer, c *Chunk, e Encoding) error {
 	var last *PalettedStorage
