@@ -211,7 +211,7 @@ func (w *World) highestObstructingBlock(x, z int) int {
 	src := worldSource{w: w}
 	for y := yHigh; y >= w.Range()[0]; y-- {
 		pos := cube.Pos{x, y, z}
-		m := w.block(pos).Model()
+		m := w.Block(pos).Model()
 		if m.FaceSolid(pos, cube.FaceUp, src) || m.FaceSolid(pos, cube.FaceDown, src) {
 			return y
 		}
@@ -335,7 +335,7 @@ func (w *World) buildStructure(pos cube.Pos, s Structure) {
 	width, height, length := dim[0], dim[1], dim[2]
 	maxX, maxY, maxZ := pos[0]+width, pos[1]+height, pos[2]+length
 	f := func(x, y, z int) Block {
-		return w.block(cube.Pos{pos[0] + x, pos[1] + y, pos[2] + z})
+		return w.Block(cube.Pos{pos[0] + x, pos[1] + y, pos[2] + z})
 	}
 
 	// We approach this on a per-chunk basis, so that we can keep only one chunk
