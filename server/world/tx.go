@@ -43,7 +43,7 @@ func (tx *Tx) SetBlock(pos cube.Pos, b Block, opts *SetOpts) {
 // at that position, the chunk is loaded, or generated if it could not be found
 // in the world save, and the block returned.
 func (tx *Tx) Block(pos cube.Pos) Block {
-	return tx.World().block(pos)
+	return tx.World().Block(pos)
 }
 
 // Liquid attempts to return a Liquid block at the position passed. This
